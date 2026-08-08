@@ -3,115 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 손안의 멜론</title>
+    <title>유튜브 플레이리스트</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: #121212; color: #ffffff;
-            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-            padding-bottom: 90px;
-        }
-
-        /* 상단 탭 네비게이션 */
-        .main-tabs {
-            display: flex; background: #1a1a1a; border-bottom: 1px solid #333;
-            position: sticky; top: 0; z-index: 20;
-        }
-        .main-tab-btn {
-            flex: 1; padding: 15px; text-align: center; background: none;
-            border: none; color: #888; font-size: 16px; cursor: pointer;
-        }
-        .main-tab-btn.active { color: #00cd3c; font-weight: bold; border-bottom: 2px solid #00cd3c; }
-
-        /* 탭 내용 영역 */
-        .tab-content { display: none; padding: 20px; }
-        .tab-content.active { display: block; }
-
-        /* 플레이리스트 스타일 */
-        .playlist { list-style: none; }
-        .playlist li {
-            display: flex; align-items: center; padding: 12px 0;
-            border-bottom: 1px solid #222; cursor: pointer;
-        }
-        .playlist li:active { background-color: #1a1a1a; }
-        .album-art { 
-            width: 45px; height: 45px; border-radius: 4px; background: #333; 
-            display: flex; justify-content: center; align-items: center; font-size: 20px; color: #888;
-        }
-        .track-info { flex-grow: 1; margin-left: 15px; }
-        .track-title { font-size: 15px; margin-bottom: 4px; color: #eee; }
-        .track-artist { font-size: 13px; color: #888; }
-
-        /* 곡 추가 폼 스타일 */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 14px; color: #aaa; margin-bottom: 5px; }
-        .form-group input {
-            width: 100%; padding: 10px; background: #222; border: 1px solid #444;
-            color: #fff; border-radius: 5px;
-        }
-        .submit-btn {
-            width: 100%; padding: 12px; background: #00cd3c; color: #000;
-            border: none; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px;
-        }
-
-        /* 하단 고정 플레이어 */
-        .bottom-player {
-            position: fixed; bottom: 0; width: 100%; height: 70px;
-            background-color: #1a1a1a; border-top: 1px solid #333;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 100;
-        }
-        .bottom-left { display: flex; align-items: center; gap: 10px; }
-        .now-playing { font-size: 14px; color: #fff; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .controls { display: flex; align-items: center; gap: 20px; }
-        .controls button { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
-        .play-btn { color: #00cd3c; font-size: 24px; }
+        body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; }
+        .upload-container { margin-bottom: 20px; background: #1e1e1e; padding: 15px; border-radius: 8px; }
+        input[type="text"] { width: 70%; padding: 10px; border-radius: 4px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
+        button { padding: 10px 15px; background: #1db954; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1aa34a; }
+        .playlist { margin-top: 20px; }
+        .song-item { padding: 10px; background: #1e1e1e; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .song-item button { background: #333; }
+        .song-item button:hover { background: #e74c3c; }
     </style>
 </head>
 <body>
 
-    <!-- 상단 탭 메뉴 -->
-    <div class="main-tabs">
-        <button class="main-tab-btn active" onclick="switchTab('playerTab', this)">🎵 재생목록</button>
-        <button class="main-tab-btn" onclick="switchTab('adminTab', this)">➕ 곡 업데이트</button>
+    <!-- 새 음악(유튜브 링크) 추가하기 -->
+    <div class="upload-container">
+        <h3>새 음악 추가하기 (유튜브 링크)</h3>
+        <input type="text" id="youtubeUrl" placeholder="유튜브 영상 주소(URL)를 입력하세요">
+        <button onclick="addYouTubeSong()">플레이리스트 추가</button>
     </div>
 
-    <!-- 1. 재생목록 탭 -->
-    <div id="playerTab" class="tab-content active">
-        <h2 style="margin-bottom: 15px; font-size: 18px;">플레이리스트</h2>
-        <ul class="playlist" id="playlistContainer">
-            <!-- 자바스크립트로 동적 생성 -->
-        </ul>
+    <!-- 재생목록 표시 영역 -->
+    <div class="playlist">
+        <h3>재생목록</h3>
+        <div id="songList"></div>
     </div>
 
-    <!-- 2. 곡 업데이트 탭 -->
-    <div id="adminTab" class="tab-content">
-        <h2 style="margin-bottom: 10px; font-size: 18px;">새 음악 추가하기</h2>
-        <p style="font-size: 13px; color: #888; margin-bottom: 20px;">파일 이름이 자동으로 곡 제목으로 지정됩니다.</p>
-        
-        <div class="form-group">
-            <label>MP3 파일 선택</label>
-            <input type="file" id="inputFile" accept="audio/*">
-        </div>
-        <button class="submit-btn" id="submitBtn" onclick="addNewTrack()">플레이리스트에 추가하기</button>
-    </div>
+    <!-- 유튜브 API 플레이어 (화면 안 보이게 숨김) -->
+    <div id="youtube-player" style="display:none;"></div>
 
-    <!-- 하단 고정 플레이어 -->
-    <div class="bottom-player">
-        <div class="bottom-left">
-            <div class="now-playing" id="nowPlayingText">재생 중인 곡 없음</div>
-        </div>
-        <div class="controls">
-            <button onclick="prevTrack()">⏮</button>
-            <button id="playBtn" class="play-btn" onclick="togglePlay()">▶</button>
-            <button onclick="nextTrack()">⏭</button>
-        </div>
-    </div>
+    <!-- 파이어베이스 SDK (v8 기준 예시) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- 유튜브 IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 
-    <!-- 오디오 엘리먼트 (숨김) -->
-    <audio id="audioPlayer"></audio>
-
-    <!-- script.js를 type="module"로 연결 -->
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
