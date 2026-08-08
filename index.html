@@ -7,22 +7,39 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; }
         .upload-container { margin-bottom: 20px; background: #1e1e1e; padding: 15px; border-radius: 8px; }
-        input[type="text"] { width: 70%; padding: 10px; border-radius: 4px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
+        textarea { width: 100%; height: 80px; padding: 10px; border-radius: 4px; border: 1px solid #333; background: #2a2a2a; color: #fff; box-sizing: border-box; resize: none; margin-bottom: 10px;}
         button { padding: 10px 15px; background: #1db954; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #1aa34a; }
+        
+        /* 현재 재생 중인 영상 영역 */
+        .player-container { margin-bottom: 20px; background: #1e1e1e; padding: 15px; border-radius: 8px; text-align: center; }
+        .player-box { position: relative; width: 100%; max-width: 560px; height: 315px; margin: 0 auto; background: #000; }
+        .player-box iframe { width: 100%; height: 100%; border: none; }
+
+        /* 플레이리스트 목록 */
         .playlist { margin-top: 20px; }
-        .song-item { padding: 10px; background: #1e1e1e; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .song-item button { background: #333; }
-        .song-item button:hover { background: #e74c3c; }
+        .song-item { padding: 10px; background: #1e1e1e; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .song-item div button { background: #333; margin-left: 5px; }
+        .song-item div button:hover { background: #e74c3c; }
+        .song-item div button.play-btn { background: #1db954; }
     </style>
 </head>
 <body>
 
-    <!-- 새 음악(유튜브 링크) 추가하기 -->
+    <!-- 새 음악(유튜브 퍼가기 코드) 추가하기 -->
     <div class="upload-container">
-        <h3>새 음악 추가하기 (유튜브 링크)</h3>
-        <input type="text" id="youtubeUrl" placeholder="유튜브 영상 주소(URL)를 입력하세요">
-        <button onclick="addYouTubeSong()">플레이리스트 추가</button>
+        <h3>새 음악 추가하기 (유튜브 퍼가기 코드)</h3>
+        <p style="font-size: 12px; color: #aaa; margin-top: 0;">유튜브 영상 하단 [공유] ➔ [퍼가기(Embed)]를 눌러 나오는 <code>&lt;iframe&gt;</code> 코드를 통째로 붙여넣으세요.</p>
+        <textarea id="embedCodeInput" placeholder='<iframe width="560" height="315" src="https://www.youtube.com/embed/..." ...></iframe>'></textarea>
+        <button onclick="addEmbedSong()">플레이리스트 추가</button>
+    </div>
+
+    <!-- 재생 화면 영역 -->
+    <div class="player-container">
+        <h3>재생 플레이어</h3>
+        <div class="player-box" id="activePlayer">
+            <p style="padding-top: 130px; color: #777;">재생할 곡을 선택해주세요.</p>
+        </div>
     </div>
 
     <!-- 재생목록 표시 영역 -->
@@ -31,14 +48,9 @@
         <div id="songList"></div>
     </div>
 
-    <!-- 유튜브 API 플레이어 (화면 안 보이게 숨김) -->
-    <div id="youtube-player" style="display:none;"></div>
-
-    <!-- 파이어베이스 SDK (v8 기준 예시) -->
+    <!-- 파이어베이스 SDK (v8 기준) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- 유튜브 IFrame API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
 
     <script src="script.js"></script>
 </body>
