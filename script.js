@@ -1,4 +1,4 @@
-// 제공해주신 파이어베이스 설정값 적용 완료
+// 본인의 파이어베이스 설정값
 const firebaseConfig = {
     apiKey: "AIzaSyBMhqNc-TwZYMO2Vp_M-TqtVIg60hwAk50",
     authDomain: "apffhs-e881c.firebaseapp.com",
@@ -13,55 +13,29 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let player;
-let currentVideoId = null;
+// 페이지가 로드되면 목록 불러오기 실행
+window.onload = function() {
+    loadPlaylist();
+};
 
-// 유튜브 IFrame API가 준비되면 호출됨
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('youtube-player', {
-        height: '0',
-        width: '0',
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-}
+// 1. 파이어베이스 Firestore에 유튜브 iframe 코드 추가
+function addEmbedSong() {
+    const textarea = document.getElementById('embedCodeInput');
+    const embedCode = textarea.value.trim();
 
-function onPlayerReady(event) {
-    console.log("유튜브 플레이어 준비 완료");
-    loadPlaylist(); // 플레이어 준비 후 목록 불러오기
-}
-
-function onPlayerStateChange(event) {
-    // 재생 상태 변경 시 처리할 내용 (필요한 경우 작성)
-}
-
-// 1. 유튜브 URL에서 비디오 ID 추출 함수
-function getYoutubeId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
-// 2. 파이어베이스 Firestore에 유튜브 링크 추가
-function addYouTubeSong() {
-    const urlInput = document.getElementById('youtubeUrl');
-    const url = urlInput.value.trim();
-    const videoId = getYoutubeId(url);
-
-    if (!videoId) {
-        alert("올바른 유튜브 링크가 아닙니다!");
+    // 간단한 iframe 태그 검증
+    if (!embedCode.includes("<iframe") || !embedCode.includes("src=")) {
+        alert("올바른 유튜브 퍼가기(iframe) 코드가 아닙니다! 코드를 다시 확인해주세요.");
         return;
     }
 
     db.collection("songs").add({
-        url: videoId,
+        embedHtml: embedCode,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     })
     .then(() => {
         alert("플레이리스트에 추가되었습니다!");
-        urlInput.value = ""; // 입력창 초기화
+        textarea.value = ""; // 입력창 초기화
         loadPlaylist();     // 목록 새로고침
     })
     .catch((error) => {
@@ -70,7 +44,7 @@ function addYouTubeSong() {
     });
 }
 
-// 3. 파이어베이스에서 목록을 가져와 화면에 렌더링
+// 2. 파이어베이스에서 목록을 가져와 화면에 렌더링
 function loadPlaylist() {
     const songListDiv = document.getElementById('songList');
     if (!songListDiv) return;
@@ -79,38 +53,38 @@ function loadPlaylist() {
     db.collection("songs").orderBy("createdAt", "desc").get()
     .then((querySnapshot) => {
         if (querySnapshot.empty) {
-            songListDiv.innerHTML = "<p>등록된 곡이 없습니다.</p>";
+            songListDiv.innerHTML = "<p style='color: #777;'>등록된 곡이 없습니다.</p>";
             return;
         }
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const videoId = data.url;
+            const embedHtml = data.embedHtml;
 
             const item = document.createElement('div');
             item.className = 'song-item';
             item.innerHTML = `
-                <span>🎵 유튜브 곡 (${videoId})</span>
+                <span>🎵 등록된 음악 곡</span>
                 <div>
-                    <button onclick="playSong('${videoId}')">재생</button>
+                    <button class="play-btn" onclick='playSong(${JSON.stringify(embedHtml)})'>재생</button>
                     <button onclick="deleteSong('${doc.id}')">삭제</button>
                 </div>
             `;
             songListDiv.appendChild(item);
         });
+    })
+    .catch((error) => {
+        console.error("목록 불러오기 실패:", error);
     });
 }
 
-// 4. 곡 재생 함수
-function playSong(videoId) {
-    if (player && player.loadVideoById) {
-        player.loadVideoById(videoId);
-        currentVideoId = videoId;
-        console.log("재생 시작:", videoId);
-    }
+// 3. 곡 재생 함수 (상단 플레이어 영역에 iframe 코드를 그대로 주입)
+function playSong(embedHtml) {
+    const activePlayer = document.getElementById('activePlayer');
+    activePlayer.innerHTML = embedHtml;
 }
 
-// 5. 곡 삭제 함수
+// 4. 곡 삭제 함수
 function deleteSong(docId) {
     if (confirm("정말 삭제하시겠습니까?")) {
         db.collection("songs").doc(docId).delete()
