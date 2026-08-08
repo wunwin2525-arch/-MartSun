@@ -1,11 +1,12 @@
-// 본인의 파이어베이스 설정값으로 채워넣으세요
+// 제공해주신 파이어베이스 설정값 적용 완료
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyBMhqNc-TwZYMO2Vp_M-TqtVIg60hwAk50",
+    authDomain: "apffhs-e881c.firebaseapp.com",
+    projectId: "apffhs-e881c",
+    storageBucket: "apffhs-e881c.firebasestorage.app",
+    messagingSenderId: "16383599274",
+    appId: "1:16383599274:web:20ecee5e9d9cfe46a326d3",
+    measurementId: "G-2CGFKM1NW3"
 };
 
 // 파이어베이스 초기화
@@ -72,6 +73,7 @@ function addYouTubeSong() {
 // 3. 파이어베이스에서 목록을 가져와 화면에 렌더링
 function loadPlaylist() {
     const songListDiv = document.getElementById('songList');
+    if (!songListDiv) return;
     songListDiv.innerHTML = "";
 
     db.collection("songs").orderBy("createdAt", "desc").get()
